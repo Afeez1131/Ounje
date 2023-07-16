@@ -1,0 +1,312 @@
+{% extends 'core/base.html' %}
+{% block extra_style %}
+    <style>
+        input[type=checkbox] {
+            transform: scale(1.5);
+            float: right;
+        }
+
+        .draggable-column {
+            background-color: #e0e0e0; /* Replace with your desired background color */
+        }
+
+        .draggable-cell {
+            background-color: #e0e0e0; /* Replace with your desired background color */
+            cursor: move;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid black;
+        }
+
+        th {
+            background-color: lightgray;
+        }
+
+        td {
+            background-color: white;
+            position: relative;
+            padding: 30px;
+        }
+
+        .highlight {
+            background-color: #f4f4f4;
+        }
+
+        .draggable {
+            cursor: move;
+        }
+
+        .checkbox {
+            position: inherit;
+            top: 5px;
+            right: 30px;
+        }
+
+        .refresh-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            padding: 5px;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-right: 10px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .button-icon {
+            margin-right: 5px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
+
+    <body class="d-flex h-100 text-center text-white bg-dark">
+    <div class="d-flex w-100 h-100 p-3 mx-auto flex-column">
+        <header class="mb-5">
+            <div>
+                <h1 class="mt-5 justify-content-center mb-0 logo">Ọ̀unje</h1>
+            </div>
+        </header>
+
+        <main class="px-2 col-lg-6 col-9 mx-auto">
+            <p class="lead">Ọ̀unje Revolutionizing Meal Planning with Customizable Food Timetables</p>
+            <form action="" method="post">
+                {% csrf_token %}
+                <input type="text" name="days" class="form-control form-control-lg" id="count"
+                       placeholder="fún ọjọ́ mẹ́lọ..." min="1" max="60">
+                <button type='button' class="mt-3 mb-3 btn btn-lg btn-secondary fw-bold" onclick="generateFood();">
+                    Generate
+                </button>
+                <div class="button-row" style="display: none">
+                    <button type='button' class="button bg-success" onclick="generateOutput('pdf');">
+                        <i class="fas fa-file-pdf button-icon"></i>
+                        Download PDF
+                    </button>
+                    <button type='button' class="button bg-primary" onclick="generateOutput('csv');">
+                        <i class="fas fa-file-csv button-icon"></i>
+                        Download CSV
+                    </button>
+                </div>
+            </form>
+
+        </main>
+
+        <section id="table">
+            <div class="table-responsive justify-content-center">
+                <table class="table bg-white">
+                    <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Breakfast</th>
+                        <th>Lunch</th>
+                        <th>Dinner</th>
+                    </tr>
+                    </thead>
+                    <tbody id="food_body">
+
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <form method="post" action="{% url 'generate_output' %}" id="generate-form">
+            {% csrf_token %}
+            <input type="hidden" name="output" id="output_text">
+            <input type="hidden" name="file_type" id="file_type">
+        </form>
+        <footer class="mt-auto text-white-50">
+            <p>Made with Love by <a href="https://www.linkedin.com/in/lawal-afeez/"> Lawal Afeez</a> |
+                <a href="https://github.com/afeez1131">@afeez1131</a>.</p>
+        </footer>
+    </div>
+    </body>
+
+    <script>
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function drag(event) {
+            event.dataTransfer.setData("text", event.target.id);
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            var data = event.dataTransfer.getData("text");
+            var draggedItem = document.getElementById(data);
+            var targetItem = event.target;
+
+            if (targetItem.nodeName === "TD") {
+                // Swap the innerHTML
+                var tempHTML = targetItem.innerHTML;
+                targetItem.innerHTML = draggedItem.innerHTML;
+                draggedItem.innerHTML = tempHTML;
+
+                // Swap the id attribute
+                var tempId = targetItem.id;
+                targetItem.id = draggedItem.id;
+                draggedItem.id = tempId;
+
+            }
+
+            targetItem.classList.remove("highlight");
+        }
+
+        function highlight(event) {
+            var targetItem = event.target;
+            if (targetItem.nodeName === "TD" && targetItem.innerHTML === "") {
+                targetItem.classList.add("highlight");
+            }
+        }
+
+        function removeHighlight(event) {
+            var targetItem = event.target;
+            if (targetItem.nodeName === "TD") {
+                targetItem.classList.remove("highlight");
+            }
+        }
+
+
+        function refresh(event) {
+            event.stopPropagation();
+            var tdElement = $(event.target).parent();
+            var textNode = tdElement.contents().filter(function () {
+                return this.nodeType === Node.TEXT_NODE;
+            });
+            //textNode.textContent = "New Dinner Text";
+
+            $.ajax({
+                url: '{% url 'get_random_food' %}',
+                type: 'GET',
+                datatype: 'json',
+
+                success: function (resp) {
+                    // textNode.nodeValue = resp.food //$('#'+id).text(resp.food)
+                    textNode[0].nodeValue = ''
+                    textNode[1].nodeValue = resp.food;
+                },
+                error: function () {
+                    console.log('error')
+                }
+            })
+        }
+
+        function getRandomFood(parent, id) {
+            $.ajax({
+                url: '{% url 'get_random_food' %}',
+                type: 'GET',
+                datatype: 'json',
+                data: {
+                    'id': id
+                },
+                success: function (resp) {
+                    parent.html(resp.food)
+                    {#$('#'+id).text(resp.food)#}
+                },
+                error: function () {
+                    console.log('error')
+                }
+            })
+        }
+
+        function generateFood() {
+            var count = $('#count').val()
+            $.ajax({
+                url: '{% url 'generate_food' %}',
+                type: 'GET',
+                data: {
+                    'count': count
+                },
+                success: function (resp) {
+                    $('#food_body').html(resp.output);
+                    if ($('#food_body').is(':empty') === false) {
+                        $('.button-row').show();
+                    }
+
+                },
+                error: function () {
+                    console.log('error occured while generating food')
+                }
+            })
+        }
+
+        function getTableContent() {
+            var columnData = [];
+
+            $("tr").each(function () {
+                var day = $(this).find("td:nth-child(1)").text().trim();
+                var breakfast = $(this).find("td:nth-child(2)").contents().filter(function () {
+                    return this.nodeType === Node.TEXT_NODE;
+                }).text().trim();
+                var lunch = $(this).find("td:nth-child(3)").contents().filter(function () {
+                    return this.nodeType === Node.TEXT_NODE;
+                }).text().trim();
+                var dinner = $(this).find("td:nth-child(4)").contents().filter(function () {
+                    return this.nodeType === Node.TEXT_NODE;
+                }).text().trim();
+
+                var column = {
+                    "day": day,
+                    "breakfast": breakfast,
+                    "lunch": lunch,
+                    "dinner": dinner
+                };
+
+                columnData.push(column);
+            });
+
+            console.log(columnData);
+            return columnData
+        }
+
+        function generateOutput(filetype) {
+            var output = getTableContent();
+            var jsonOutput = JSON.stringify(output)
+            $('#output_text').val(jsonOutput);
+            $('#file_type').val(filetype);
+            $('.button-row').hide();
+            $('#generate-form').submit();
+            {% comment %}$.ajax({
+                url: '{% url 'generate_output' %}',
+                type: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': getCookie('csrftoken'),
+                    'output': jsonOutput
+                },
+                success: function(resp) {
+                    console.log('sent to the backend');
+                },
+                error: function() {
+                    console.log('error occured');
+                }
+            }){% endcomment %}
+
+        }
+    </script>
+
+{% endblock %}
+
+
