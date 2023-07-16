@@ -27,7 +27,10 @@ python manage.py loaddb
 # Run the development server
 python manage.py runserver
 
-Open your favorite browser and visit: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+# Open your favorite browser and visit: 
+  [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+
+```
 
 # Contact
     LinkedIn: [Lawal Afeez](https://www.linkedin.com/in/lawal-afeez/)
