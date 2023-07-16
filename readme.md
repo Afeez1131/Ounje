@@ -8,7 +8,10 @@ But wait, there's more! Ọ̀unje is not just a playful trickster; it's also a r
 
 ```bash
 # Clone the repository
-git clone <repository_url>
+git clone https://github.com/Afeez1131/Ounje
+
+
+# cd into the cloned directory
 
 # Create and activate a virtual environment
 python -m venv venv
