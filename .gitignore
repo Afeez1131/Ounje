@@ -9,3 +9,4 @@ web.config
 .DS_Store
 .idea
 Scripts
+pyvenv.cfg
