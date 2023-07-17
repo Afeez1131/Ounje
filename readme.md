@@ -12,6 +12,7 @@ git clone https://github.com/Afeez1131/Ounje
 
 
 # cd into the cloned directory
+cd Ounje/ 
 
 # Create and activate a virtual environment
 python -m venv venv

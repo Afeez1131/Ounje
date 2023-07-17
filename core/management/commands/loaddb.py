@@ -7,6 +7,8 @@ from core.models import Food
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        Food.objects.all().delete()
+        count = 0
         with open('food.json', 'r') as file:
             content = json.load(file)
 
@@ -15,6 +17,7 @@ class Command(BaseCommand):
             description = obj.get('description')
             category = obj.get('category')
             if not Food.objects.filter(name=name, description=description, category=category).exists():
-                print('does not exist in DB')
-                Food.objects.filter(name=name, description=description, category=category)
-    print('Done loading foods from food.json into DB.')
+                count += 1
+                print('creating {} '.format(name))
+                Food.objects.create(name=name, description=description, category=category)
+        print('Successfully Loaded {} Food into the DB'.format(count))
