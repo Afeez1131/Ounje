@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-config('DEBUG', cast=bool, default=True)
+DEBUG = config('DEBUG', cast=bool, default=True)
 
 ALLOWED_HOSTS = ['*']
 
@@ -152,6 +152,7 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 SWAGGER_SETTINGS = {
+    'DEFAULT_API_URL': 'api/v1',
     'SECURITY_DEFINITIONS': {
         'Basic': {
             'type': 'basic'
@@ -166,7 +167,7 @@ SWAGGER_SETTINGS = {
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-LIVE_SERVER = True
+LIVE_SERVER = False
 if LIVE_SERVER:
     DATABASES = {
         'default': dj_database_url.parse(config('DATABASE_URL'), conn_max_age=600),

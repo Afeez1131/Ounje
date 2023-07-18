@@ -115,10 +115,10 @@
 
         </main>
 
-        <section id="table">
+        <section >
             <div class="table-responsive justify-content-center">
-                <table class="table bg-white">
-                    <thead>
+                <table class="table bg-white" id="table">
+                    <thead id="thead">
                     <tr>
                         <th>Day</th>
                         <th>Breakfast</th>
@@ -137,7 +137,9 @@
             <input type="hidden" name="output" id="output_text">
             <input type="hidden" name="file_type" id="file_type">
         </form>
+
         <footer class="mt-auto text-white-50">
+            Developers: <a href="https://ounje.onrender.com/api/v1/docs" target="_blank">Ounje Docs</a>
             <p>Made with Love by <a href="https://www.linkedin.com/in/lawal-afeez/"> Lawal Afeez</a> |
                 <a href="https://github.com/afeez1131">@afeez1131</a>.</p>
         </footer>
@@ -145,6 +147,9 @@
     </body>
 
     <script>
+    $(document).ready(function() {
+        $('#table').hide();
+    })
         function allowDrop(event) {
             event.preventDefault();
         }
@@ -243,6 +248,7 @@
                 success: function (resp) {
                     $('#food_body').html(resp.output);
                     if ($('#food_body').is(':empty') === false) {
+                        $('#table').show();
                         $('.button-row').show();
                     }
 
@@ -287,7 +293,9 @@
             var jsonOutput = JSON.stringify(output)
             $('#output_text').val(jsonOutput);
             $('#file_type').val(filetype);
+            $('#table').hide();
             $('.button-row').hide();
+
             $('#generate-form').submit();
             {% comment %}$.ajax({
                 url: '{% url 'generate_output' %}',
