@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', cast=bool, default=False)
+DEBUG = config('DEBUG', cast=bool, default=True)
 
 ALLOWED_HOSTS = ['*']
 
@@ -166,8 +166,6 @@ SWAGGER_SETTINGS = {
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-LIVE_SERVER = False
+LIVE_SERVER = True
 if LIVE_SERVER:
-    DATABASES = {
-        'default': dj_database_url.parse(config('DATABASE_URL'), conn_max_age=600),
-    }
+    from ounje.production_settings import *
